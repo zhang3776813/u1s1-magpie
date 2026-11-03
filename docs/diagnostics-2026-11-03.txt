@@ -33,7 +33,7 @@ device_token: {{SECRET_...}}  api_key: {{SECRET_...}}  keypair: 有
 ```
 magpie plugin
   C:\Users\ZMY\Downloads\u1s1-magpie  on
-    u1s1 (u1s1, 3 models)  signed in as 517835354@qq.com
+    u1s1 (u1s1, 3 models)  signed in as 5178***@qq.com
 
 magpie provider test u1s1
   ✗ chat  403 · ... client integrity review（透传服务端原文）

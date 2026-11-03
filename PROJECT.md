@@ -92,6 +92,6 @@ node _probe-u1s1.mjs      # 插件同款签名直连网关（dev，不进包）
 | glm-5.3-flash 上下文/输出 | 1048576 / 131072 |
 | 三模型 | 均 reasoning + vision |
 | `POST /chat/completions`（带/不带 attestation） | **403 client integrity** → 2026-11-03 修复：缺 `User-Agent: u1s1-cli`，补上后 **200 通过**（provider test ✓ chat · deepseek-flash） |
-| 凭证 | keypair 有、device_token/api_key 形态正确、站点 cn、accountId 517835354@qq.com |
+| 凭证 | keypair 有、device_token/api_key 形态正确、站点 cn、accountId 5178***@qq.com |
 
 **回归判定**：`provider test u1s1` 的 chat 应显示 `✓`。若 403，先查 `user-agent` 头是否被覆盖。
