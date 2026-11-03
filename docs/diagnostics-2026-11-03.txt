@@ -1,0 +1,61 @@
+# u1s1 × Magpie 插件 — 诊断基线（2026-11-03）
+
+> 基线用途：发版/回归对照。任何后续改动后重跑 `node _probe-u1s1.mjs`，比对本节。
+> 凭证已脱敏（{{SECRET_*}}）。
+
+## 网关直连诊断（`_probe-u1s1.mjs`）
+
+```
+站点: cn  api: https://api.u1s1app.com/v1
+device_token: {{SECRET_...}}  api_key: {{SECRET_...}}  keypair: 有
+
+[models(无attestation)] GET https://api.u1s1app.com/v1/models
+  status: 200
+  META {"id":"deepseek-flash","name":"DeepSeek Flash","context_length":1048576,"max_tokens":384000,"reasoning":true,"vision":true,"is_default":true,"price":{"input":0.30026052015719523,"output":1.201042080628781,"cache_read":0.020606114128434966}}
+  META {"id":"qwen3.8-flash","name":"Qwen3.8 Flash","context_length":1000000,"max_tokens":131072,"reasoning":true,"vision":true,"price":{"input":0.16,"output":0.47,"cache_read":0.016}}
+  META {"id":"glm-5.3-flash","name":"GLM-5.3 Flash","context_length":1048576,"max_tokens":131072,"reasoning":true,"vision":true,"price":{"input":0.15,"output":0.5,"cache_read":0.03}}
+  client_attestation: 有 (len=151, expires_in=604800)
+
+[models(带attestation)] GET https://api.u1s1app.com/v1/models
+  status: 200
+
+[chat(带attestation)] POST https://api.u1s1app.com/v1/chat/completions
+  status: 403
+  body: ... "检测到请求来自非 u1s1 客户端，赠送额度只能在官方客户端使用；充值余额不限制客户端" ... (client integrity review)
+
+[chat(无attestation)] POST https://api.u1s1app.com/v1/chat/completions
+  status: 403
+  body: ... 同上 ...
+```
+
+## Magpie CLI 实测
+
+```
+magpie plugin
+  C:\Users\ZMY\Downloads\u1s1-magpie  on
+    u1s1 (u1s1, 3 models)  signed in as 517835354@qq.com
+
+magpie provider test u1s1
+  ✗ chat  403 · ... client integrity review（透传服务端原文）
+```
+
+## 基线断言
+
+| 断言项 | 期望值 |
+|---|---|
+| `/v1/models`（无/带 attestation） | 200，`client_attestation` len=151 / expires_in=604800 |
+| 模型个数 | 3：deepseek-flash、qwen3.8-flash、glm-5.3-flash |
+| deepseek-flash | ctx 1048576 / out 384000 / default / vision / reasoning |
+| qwen3.8-flash | ctx 1000000 / out 131072 / vision / reasoning |
+| glm-5.3-flash | ctx 1048576 / out 131072 / vision / reasoning |
+| 插件语法 | `node --check index.mjs` 通过 |
+| 插件状态 | `magpie plugin` 显示 on / 3 models / signed in |
+| 聊天 chat | **200 通过**（`provider test u1s1` → `✓ chat · deepseek-flash`） |
+
+> **关键修复（2026-11-03 16:4x）**：chat 曾 403（client integrity review）。对照 CLI 源码 + 抓包逐变量测试定位：服务端按 **`User-Agent: u1s1-cli`** 识别官方客户端。插件 `baseHeaders` 缺该头 → 403；补上后 chat **200 通过**（实测 2045ms / 2916ms，稳定复现）。其余头（x-u1s1-version/client/platform/attestation + DPoP）本就与 CLI 一致。
+
+## 回归更新点
+
+- 网关模型/价格变更后：重跑探针，同步 META 与插件 `FALLBACK_MODELS`。
+- 凭证轮换后：重新 `magpie plugin login u1s1`，基线 accountId 不变。
+- 若 chat 再次 403：先检查 `User-Agent: u1s1-cli` 是否仍被带上（loader.fetch 合并头时是否被调用方覆盖）。

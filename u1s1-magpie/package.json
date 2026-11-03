@@ -1,0 +1,12 @@
+{
+  "name": "u1s1-magpie",
+  "version": "0.1.0",
+  "description": "u1s1 官方 Magpie 插件：设备码登录，让 Magpie 网关里的各 Agent 使用 u1s1 模型",
+  "type": "module",
+  "main": "./index.mjs",
+  "files": ["index.mjs", "README.md"],
+  "keywords": ["magpie", "opencode-plugin", "u1s1"],
+  "magpie": {
+    "maxConcurrency": 4
+  }
+}
