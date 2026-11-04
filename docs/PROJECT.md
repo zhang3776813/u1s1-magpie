@@ -6,21 +6,25 @@
 
 ```
 E:\WorkSpace\其他\
-├─ u1s1-magpie\             # 可发版插件（交付物）
-│  ├─ index.mjs             # 插件主体（provider / auth / loader / models）
-│  ├─ package.json          # 包元数据 + magpie 配置
-│  └─ README.md             # 对外安装/使用文档
-├─ u1s1-magpie.zip          # 打包件（magpie plugin add ./u1s1-magpie 用）
-├─ PROJECT.md               # 本项目文档（本文件）
-├─ docs\
+├─ package.json          # 包元数据 + magpie 配置（发布必需，置根）
+├─ index.mjs             # 插件主体（provider / auth / loader / models）｜发布必需，置根
+├─ README.md             # 对外安装/使用文档（npm + GitHub 首页，发布必需）
+├─ LICENSE               # MIT 许可（GitHub 识别 license，发布必需）
+├─ icon.svg / u1s1-icon.png   # 插件/注册表图标资产
+├─ .gitignore
+├─ docs\                 # 文档
+│  ├─ PROJECT.md              # 本项目文档（本文件）
 │  └─ diagnostics-2026-11-03.txt  # 诊断基线（发版/回归对照）
-├─ _u1s1-src\               # u1s1-cli 官方源码（协议提取来源，勿改）
-│  └─ package\dist\         #   api.js / device-auth.js / login.js / site.js / config.*
-├─ _probe-u1s1.mjs          # 开发用诊断探针（网关连通/attestation/META 基线）
-├─ _probe-chat-variants.mjs # 开发用 chat 变体对照探针（定位 client integrity 判定依据）
-├─ _probe.mjs / _probe2.mjs / _probe3.mjs   # 早期临时探针（可清理，不影响交付）
-└─ 已安装路径               # C:\Users\ZMY\Downloads\u1s1-magpie\（Magpie 实际加载）
+└─ dev\                  # 开发/诊断工具（不随包发布）
+   ├─ _probe-u1s1.mjs          # 诊断探针（网关连通/attestation/META 基线）
+   ├─ _probe-chat-variants.mjs # chat 变体对照探针（定位 client integrity 判定依据）
+   ├─ _probe.mjs / _probe2.mjs / _probe3.mjs   # 早期临时探针（可清理，不影响交付）
+   └─ _u1s1-src\               # u1s1-cli 官方源码（协议提取来源，勿改；gitignore 不进仓）
+      └─ package\dist\         #   api.js / device-auth.js / login.js / site.js / config.*
 ```
+
+> 磁盘保留但不进仓：`u1s1-magpie.zip`（打包件）、`.git.bak-email-rewrite/`（发布前 git 历史备份）。
+> 已安装路径：`C:\Users\ZMY\Downloads\u1s1-magpie\`（Magpie 实际加载）。
 
 ## 插件接口说明（index.mjs）
 
@@ -33,7 +37,7 @@ E:\WorkSpace\其他\
 | `auth.loader(getAuth)` | 每请求挂载：`baseURL` + 自定义 `fetch`（注入 DPoP/三件套头/attestation；401→加 `X-Magpie-Sign-In: expired`） |
 | `provider.models(provider, {auth})` | 登录后 `GET /v1/models` 实时刷新模型列表（含 context/max/price/vision）；401→重登、403→透传原文 |
 
-### 协议对照（对照 `_u1s1-src/package/dist/`）
+### 协议对照（对照 `dev/_u1s1-src/package/dist/`）
 
 - 站点：cn `api.u1s1app.com/v1`（默认）/ intl `api.u1s1.dev/v1`（自动切换）→ `site.js`
 - 设备码：`POST /auth/device/start`（传 `public_jwk`）→ `POST /auth/device/poll`（回 `u1s1-`/`u1s1d-`）→ `login.js`
@@ -64,13 +68,13 @@ magpie plugin remove u1s1
 D:\install_path\magpie\magpie-windows-amd64.exe <子命令>
 
 # 语法校验 / 诊断
-node --check u1s1-magpie/index.mjs
-node _probe-u1s1.mjs      # 插件同款签名直连网关（dev，不进包）
+node --check index.mjs
+node dev/_probe-u1s1.mjs  # 插件同款签名直连网关（dev，不进包）
 ```
 
 ## 操作命令记录（2026-11-03）
 
-1. 定位 u1s1：jiti 缓存 → `_u1s1-src/package/dist/`；Magpie 本体 `D:\install_path\magpie\magpie-windows-amd64.exe`
+1. 定位 u1s1：jiti 缓存 → `dev/_u1s1-src/package/dist/`；Magpie 本体 `D:\install_path\magpie\magpie-windows-amd64.exe`
 2. 核对插件两份副本一致；核对 protocol 与 CLI 源码四项（site/login/device-auth/api）
 3. 修复 `models()`：字段映射（`context_window`→`context_length` 等）、401/403 语义、真实价格/输出上限/vision
 4. loader 补 401 `X-Magpie-Sign-In`；新增 `messageOf()` 透传原文

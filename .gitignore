@@ -12,7 +12,10 @@ node_modules/
 **/.git-credentials
 
 # 第三方 SDK 源码（可从官方 npm 重新获取，不进仓）
-_u1s1-src/
+dev/_u1s1-src/
+
+# 历史改写备份（发布前 .git 备份，保留在磁盘但不上传）
+.git.bak-email-rewrite/
 
 # 操作系统
 .DS_Store

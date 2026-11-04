@@ -62,8 +62,8 @@ magpie plugin remove u1s1
 
 - **两站账号不通**：中国站（u1s1app.com）与国际站（u1s1.dev）是独立账号体系；登录时默认走中国站，失败自动尝试国际站。
 - **余额**：扣除的是当前登录账号的余额；价格与模型可用状态以 u1s1 官网「模型与价格」页为准。
-- **本地诊断**：仓库同级目录的 `_probe-u1s1.mjs`（开发用，不随包发布）可用插件同款签名直连网关，验证 `/models`、`/chat/completions` 与 attestation 链路：
+- **本地诊断**：`dev/_probe-u1s1.mjs`（开发用，不随包发布）可用插件同款签名直连网关，验证 `/models`、`/chat/completions` 与 attestation 链路：
 
   ```sh
-  node ../_probe-u1s1.mjs
+  node dev/_probe-u1s1.mjs
   ```
